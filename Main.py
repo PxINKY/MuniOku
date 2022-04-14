@@ -1,0 +1,264 @@
+import discord
+from discord.ext import commands
+from MaxEmbeds import EmbedBuilder
+import asyncio
+import os
+import json
+import time
+
+TOKEN = open('Token.txt', 'r').read()
+mcol = discord.Color.from_rgb(64, 77, 94)
+intents = discord.Intents().all()
+Bot = commands.Bot(command_prefix='m!', intents=intents)
+
+
+# on ready
+@Bot.event
+async def on_ready():
+    print('Logged in as: ' + Bot.user.name)
+    await Bot.change_presence(status=discord.Status.online, activity=discord.Game('m!help for help!'))
+
+
+Bot.remove_command('help')
+
+
+@Bot.command(help="List all commands and a short description")
+async def help(ctx):
+    embed = EmbedBuilder(title="**Command list:**",
+                         description="**BASIC COMMANDS**:\n"
+                                     "**m!help** - Shows this message\n"
+                                     "**m!beta** - Shows all beta participants\n"
+                                     "**m!whoami** - A brief detailing of myself (Muni Oku)\n"
+                                     "\n**VERIFICATION COMMANDS:**\n"
+                                     "**m!verify** - For server verification\n"
+                                     "\n**INFORMATION COMMANDS**\n"
+                                     "**m!mods** - Shows all mods\n"
+                                     "**m!world** - Shows world ID and some other information\n"
+                                     "**m!search [Arg 1] [Arg 2]** - Searches for a mod\n**>** Arg 1 = ['DID' / 'DTag' / 'VRChatLink']\n**>** Arg 2 = [Discord ID / Discord Tag / VRChat Profile Link]\n",
+                         # "**m!github** - Sends github link\n"
+                         color=mcol,
+                         footer=["Bot Made By PxINKY#0001"]
+                         ).build()
+    await ctx.send(embed=embed)
+
+
+@Bot.command(help='gives world ID')
+async def world(ctx):
+    embed = EmbedBuilder(title="Furry Island Resort",
+                         description="Link: [Furry Island Resort](https://vrchat.com/home/world/wrld_6195502e-6462-4651-833a-662a408f616c)\n"
+                                     "Creator: [Greg The Furry](https://vrchat.com/home/user/usr_d6f6171a-3b60-4da7-8de9-561734af45ae)\n",
+                         color=mcol,
+                         footer=["ID: wrld_6195502e-6462-4651-833a-662a408f616c\nArt by: Legenragon#9924"]
+                         ).build()
+    FIR = discord.File(r"./MuniOkuPhotos/Furry_Island_Announcement.png", filename="Furry_Island_Announcement.png")
+    embed.set_image(url="attachment://Furry_Island_Announcement.png")
+    await ctx.send(embed=embed, file=FIR)
+
+
+@Bot.command(help="A little bit about me!")
+async def whoami(ctx):
+    embed = EmbedBuilder(title="Muni Oku",
+                         description=f"Hello! im {Bot.user.name}!\nI'm the mascot for FIR\n(Furry Island Resort)\n",
+                         color=mcol,
+                         thumbnail=Bot.user.avatar_url,
+                         footer=["WIP - NEED MORE INFO"]
+                         ).build()
+    await ctx.send(embed=embed)
+
+
+@Bot.command(help="List all participants of beta")
+async def beta(ctx):
+    f = open('beta', 'r')
+    betausers = "\n**Beta Participants:**\n"
+    for i in f:
+        betausers += f"💎 {i}"
+    f.close()
+    embed = EmbedBuilder(title="**Big thanks to everyone who participated in the beta!**",
+                         description=f"{betausers}",
+                         color=mcol,
+                         thumbnail=f"attachment://beta.png",
+                         footer="Bot Made By PxINKY#0001"
+                         ).build()
+    betapng = discord.File(r"./Resources/beta.png", filename="beta.png")
+    await ctx.send(embed=embed, file=betapng)
+
+
+@Bot.command(help="A list of all moderators and there VRChat links")
+async def mods(ctx):
+    M = open('./Settings/moderators.json', 'r')
+    Mods = json.load(M)
+    embed = EmbedBuilder(title="**All Moderators:**",
+                         description="",
+                         color=mcol,
+                         footer=["WIP LIST"]
+                         ).build()
+    lissy = ""
+    for i in Mods["Moderators"]:
+        for x in i["members"]:
+            lissy += f"**>** [{x['DiscordTag']}]({x['VRChatLink']})\n"
+
+        if i["GroupName"] == "World Moderator":
+            embed2 = EmbedBuilder(title=f"**{i['GroupName']}s**",
+                                  description=f"{lissy}",
+                                  color=mcol,
+                                  footer=["WIP LIST"]
+                                  ).build()
+        else:
+            embed.add_field(name=i["GroupName"], value=f"{lissy}", inline=(
+                    i["GroupName"] != "Owner" and i["GroupName"] != "Co-Owner" and i[
+                "GroupName"] != "Super Admin" and i["GroupName"] != "Executive Admin"))
+        lissy = ""
+    await ctx.send(embed=embed)
+    if embed2:
+        await ctx.send(embed=embed2)
+    M.close()
+
+
+@Bot.command(help="search for mods")
+async def search(ctx, param, arg):
+    identifier = ""
+    if param == "DTag":
+        identifier = "DiscordTag"
+    elif param == "DID":
+        identifier = "DiscordID"
+    elif param == "VRCLink":
+        identifier = "VRChatLink"
+    else:
+        await ctx.send("Invalid Parameter")
+        return
+    M = open('./Settings/moderators.json', 'r')
+    Mods = json.load(M)
+    for i in Mods["Moderators"]:
+        for x in i["members"]:
+            if x[identifier] == arg:
+                embed = EmbedBuilder(title=f"Info for {x['DiscordTag']}",
+                                     description=f"[VRChat link]({x['VRChatLink']})\nDiscord Tag: {x['DiscordTag']}\nDiscord ID: {x['DiscordID']}",
+                                     color=mcol,
+                                     footer=["WIP"]
+                                     ).build()
+                try:
+                    print(Bot.get_user(int(x['DiscordID'])))
+                    embed.set_thumbnail(url=Bot.get_user(int(x['DiscordID'])).avatar_url)
+                except:
+                    pass
+                await ctx.send(embed=embed)
+                M.close()
+                return
+    await ctx.send("No user found")
+    M.close()
+
+
+@Bot.command(help="Verify yourself to access the rest of the server!")
+async def verify(ctx):
+    # Channel to send the info to
+    # read from Settings/config.json and grab the channel ID
+    with open('Settings/config.json', 'r') as f:
+        data = json.load(f)
+        outputID = data["ModChannel"]
+        # to use > inputID = data["VerifyChannel"]
+    channel = Bot.get_channel(outputID)
+
+    # Intro embed
+    intro = EmbedBuilder(title="Verification",
+                         description=f'Hello {ctx.author.name}!\n'
+                                     f'Please answer the following 6 questions!\n'
+                                     f'After doing so you will be reviewed by staff and allowed in based on application',
+                         color=mcol,
+                         thumbnail=Bot.user.avatar_url
+                         ).build()
+
+    # Verification fail embed
+    veriFail = EmbedBuilder(title="Verification Failed!",
+                            description=f'You took too long to answer!\nPlease re-apply to be verified!',
+                            color=mcol,
+                            thumbnail="attachment://error.png"
+                            ).build()
+    errorpng = discord.File(r"./Resources/error.png", filename="error.png")
+
+    # Verification success embed
+    veriComplete = EmbedBuilder(title="Verification sent for review!",
+                                description=f'Thank you {ctx.author.name} for your time!\n'
+                                            f'Your verification ticket has been successfully sent!\n'
+                                            f'Please note that it may take up to 24 hours for staff to review your application',
+                                color=mcol,
+                                thumbnail="attachment://check.png"
+                                ).build()
+    complpng = discord.File(r"./Resources/check.png", filename="check.png")
+
+    # load Settings/Questions and put the questions in a list
+    ques = []
+    allq = []
+    f = open('Settings/Questions', 'r')
+    for i in f:
+        ques.append(i)
+
+    for i in range(0, 6):
+        temp = EmbedBuilder(title=f"Question {i + 1}",
+                            description=f"{ques[i]}".replace('\\n', '\n'),
+                            color=mcol,
+                            thumbnail=Bot.user.avatar_url
+                            ).build()
+        allq.append(temp)
+
+    alla = []
+    # check for permission to send direct message
+    try:
+        await ctx.author.send(embed=intro)
+    except discord.Forbidden:
+        await ctx.send(
+            ctx.author.mention + ", I don't have permission to DM you!\nTo fix this go into\nServer Settings > Server Privacy > Allow Direct Messages from server members",
+            delete_after=30)
+        await ctx.message.delete()
+        return
+    # Tell them to check dms
+    await ctx.send(f'{ctx.author.mention} Please check your DM\'s!', delete_after=5)
+    # Send intro + question 1
+    time.sleep(1)
+    # try / except statement for timeout and verification fail
+    try:
+        for i in range(len(allq)):
+            await ctx.author.send(embed=allq[i])
+            time.sleep(1)
+            temp = await Bot.wait_for('message', check=lambda message: message.author == ctx.author, timeout=60.0)
+            alla.append(temp.content)
+    except asyncio.TimeoutError:
+        await ctx.author.send(embed=veriFail, file=errorpng)
+        await ctx.message.delete()
+        return
+
+    # Verification success
+    user = "NULL"
+    icon = "NULL"
+    joined = "NULL"
+    try:
+        usr = await Bot.fetch_user(ctx.author.id)
+    except:
+        pass
+    try:
+        icon = usr.avatar_url
+    except:
+        pass
+    try:
+        joined = usr.joined_at
+    except:
+        pass
+    try:
+        user = usr.created_at
+    except:
+        pass
+
+    veri = f"**Name(s):**\n{alla[0]}\n**Age:**\n{alla[1]}\n**Gender / Pronouns:**\n{alla[2]}\n**Hobbies:**\n{alla[3]}\n**How they found FIR:**\n{alla[4]}\n**Fact(s) about them:**\n{alla[5]}\n**Account Created on:**\n{user}\n**Joined Server on:**\n{joined}"
+    veribuild = EmbedBuilder(title=f"Verification for {ctx.author}",
+                             description=veri,
+                             color=mcol,
+                             thumbnail=icon
+                             ).build()
+    # TODO - Replace ctx.send with channel ID that can be set
+    await channel.send("**[**<@&963843804086018099>**]**", embed=veribuild)
+    # Alert user that there application was sent
+    await ctx.author.send(embed=veriComplete, file=complpng)
+    # delete the original message
+    await ctx.message.delete()
+
+
+Bot.run(TOKEN)
