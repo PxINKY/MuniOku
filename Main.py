@@ -34,8 +34,8 @@ async def help(ctx):
                                      "\n**INFORMATION COMMANDS**\n"
                                      "**m!mods** - Shows all mods\n"
                                      "**m!world** - Shows world ID and some other information\n"
-                                     "**m!search [Arg 1] [Arg 2]** - Searches for a mod\n**>** Arg 1 = ['DID' / 'DTag' / 'VRChatLink']\n**>** Arg 2 = [Discord ID / Discord Tag / VRChat Profile Link]\n",
-                         # "**m!github** - Sends github link\n"
+                                     "**m!search [Arg 1] [Arg 2]** - Searches for a mod\n**>** Arg 1 = ['DID' / 'DTag' / 'VRChatLink']\n**>** Arg 2 = [Discord ID / Discord Tag / VRChat Profile Link]\n"
+                                     "**m!github** - Sends github link\n",
                          color=mcol,
                          footer=["Bot Made By PxINKY#0001"]
                          ).build()
@@ -54,6 +54,14 @@ async def world(ctx):
     embed.set_image(url="attachment://Furry_Island_Announcement.png")
     await ctx.send(embed=embed, file=FIR)
 
+@Bot.command(help="Sends a link to the github repo")
+async def github(ctx):
+    embed = EmbedBuilder(title="Github Repository",
+                         description="Link: [Github](https://github.com/PxINKY/MuniOku)",
+                         color=mcol,
+                         thumbnail="https://cdn-icons-png.flaticon.com/512/25/25231.png"
+                         ).build()
+    await ctx.send(embed=embed)
 
 @Bot.command(help="A little bit about me!")
 async def whoami(ctx):
@@ -227,7 +235,6 @@ async def verify(ctx):
         return
 
     # Verification success
-    # TODO: CLEAN THIS UP AND MAKE IT COMPACT
     user = "NULL"
     icon = "NULL"
     joined = "NULL"
@@ -247,7 +254,7 @@ async def verify(ctx):
         user = usr.created_at
     except:
         pass
-    # TODO: SIMPLIFY
+
     veri = f"**Name(s):**\n{alla[0]}\n**Age:**\n{alla[1]}\n**Gender / Pronouns:**\n{alla[2]}\n**Hobbies:**\n{alla[3]}\n**How they found FIR:**\n{alla[4]}\n**Fact(s) about them:**\n{alla[5]}\n**Account Created on:**\n{user}\n**Joined Server on:**\n{joined}"
     veribuild = EmbedBuilder(title=f"Verification for {ctx.author}",
                              description=veri,
