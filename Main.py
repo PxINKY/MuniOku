@@ -227,6 +227,7 @@ async def verify(ctx):
         return
 
     # Verification success
+    # TODO: CLEAN THIS UP AND MAKE IT COMPACT
     user = "NULL"
     icon = "NULL"
     joined = "NULL"
@@ -246,7 +247,7 @@ async def verify(ctx):
         user = usr.created_at
     except:
         pass
-
+    # TODO: SIMPLIFY
     veri = f"**Name(s):**\n{alla[0]}\n**Age:**\n{alla[1]}\n**Gender / Pronouns:**\n{alla[2]}\n**Hobbies:**\n{alla[3]}\n**How they found FIR:**\n{alla[4]}\n**Fact(s) about them:**\n{alla[5]}\n**Account Created on:**\n{user}\n**Joined Server on:**\n{joined}"
     veribuild = EmbedBuilder(title=f"Verification for {ctx.author}",
                              description=veri,
