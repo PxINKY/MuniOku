@@ -1,5 +1,5 @@
-# MuniOku
-A open-source repository for Muni Oku Discord bot
+# Muni Oku The Discord Companion
+## A open-source repository for Muni Oku Discord bot
 
 Lots to do so much time! 
 
