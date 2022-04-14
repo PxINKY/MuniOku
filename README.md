@@ -1,4 +1,7 @@
 # MuniOku
-A open-source repository for Muni Oku discord bot
+A open-source repository for Muni Oku Discord bot
 
-[Discord](https://discord.gg/firvrc)
+Lots to do so much time! 
+
+
+FIR Discord server: [Discord](https://discord.gg/firvrc)
