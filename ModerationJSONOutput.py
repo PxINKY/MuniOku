@@ -16,4 +16,4 @@ data2 = data["Moderators"]
 # 6 = Discord Admin
 # 7 = Discord Moderator
 
-
+print(data2)

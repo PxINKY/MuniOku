@@ -1,4 +1,4 @@
-Mods = [
+shits = [
     "HuskyGaming109#0001 - 727555617333444618",
     "Legenragon#9924 - 414485583449161728",
     "MedusaCascade#5247 - 327501211093958656",
@@ -29,9 +29,9 @@ Mods = [
 ]
 
 
-for mod in Mods:
-    moddies = mod.split(" - ")
+for shit in shits:
+    shittys = shit.split(" - ")
     print("{")
-    format_s = f"\"DiscordTag\": \"{moddies[0]}\",\n\"DiscordID\": \"{moddies[1]}\""
+    format_s = f"\"DiscordTag\": \"{shittys[0]}\",\n\"DiscordID\": \"{shittys[1]}\""
     print(format_s)
     print("},")

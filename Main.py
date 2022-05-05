@@ -93,15 +93,16 @@ async def beta(ctx):
 
 @Bot.command(help="A list of all moderators and there VRChat links")
 async def mods(ctx):
-    M = open('./Settings/moderators.json', 'r')
-    Mods = json.load(M)
+    x = "./Settings/moderators.json"
+    m = open(x, 'r')
+    modsl = json.load(m)
     embed = EmbedBuilder(title="**All Moderators:**",
                          description="",
                          color=mcol,
                          footer=["WIP LIST"]
                          ).build()
     lissy = ""
-    for i in Mods["Moderators"]:
+    for i in modsl["Moderators"]:
         for x in i["members"]:
             lissy += f"**>** [{x['DiscordTag']}]({x['VRChatLink']})\n"
 
@@ -119,7 +120,7 @@ async def mods(ctx):
     await ctx.send(embed=embed)
     if embed2:
         await ctx.send(embed=embed2)
-    M.close()
+    m.close()
 
 
 @Bot.command(help="search for mods")
@@ -268,5 +269,40 @@ async def verify(ctx):
     # delete the original message
     await ctx.message.delete()
 
+@Bot.command(help="Updates the json list with current usernames")
+async def update(ctx):
+    message = await ctx.send("Updating...")
+
+    x = "./Settings/moderators.json"
+    f = open(x, "r")
+    data = json.load(f)
+    f.close()
+    for m in data["Moderators"]:
+        for g in m["members"]:
+            try:
+                user = await Bot.fetch_user(int(g["DiscordID"]))
+                g["DiscordTag"] = f'{user.name}#{user.discriminator}'
+            except:
+                print("User not found")
+    # Write the updated json file
+    f = open(x, "w")
+    f.write(json.dumps(data, indent=4))
+    f.close()
+    await message.edit(content="Done!")
+
+
+@Bot.command(help="Sends details on json file")
+async def jsonoutline(ctx):
+    embed = EmbedBuilder(title="JSON File",
+        description=f'',
+        color=mcol,
+        thumbnail=Bot.user.avatar_url
+        ).build()
+    await ctx.send(embed=embed)
+
+@Bot.command(help="Dumps .json file")
+async def dumpjson(ctx):
+    x = "./Settings/moderators.json"
+    await ctx.send(file=discord.File(x))
 
 Bot.run(TOKEN)
