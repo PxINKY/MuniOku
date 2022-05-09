@@ -12,15 +12,20 @@ intents = discord.Intents().all()
 Bot = commands.Bot(command_prefix='m!', intents=intents)
 
 
-# on ready
+# =================================================================================================================
+# ================================================= ON READY ======================================================
+# =================================================================================================================
+
 @Bot.event
 async def on_ready():
     print('Logged in as: ' + Bot.user.name)
     await Bot.change_presence(status=discord.Status.online, activity=discord.Game('m!help for help!'))
 
-
 Bot.remove_command('help')
 
+# =================================================================================================================
+# ==================================================== HELP =======================================================
+# =================================================================================================================
 
 @Bot.command(help="List all commands and a short description")
 async def help(ctx):
@@ -36,12 +41,16 @@ async def help(ctx):
                                      "**m!world** - Shows world ID and some other information\n"
                                      "**m!search [Arg 1] [Arg 2]** - Searches for a mod\n**>** Arg 1 = ['DID' / 'DTag' / 'VRCLink']\n**>** Arg 2 = [Discord ID / Discord Tag / VRChat Profile Link]\n"
                                      "**m!github** - Sends github link\n"
-                                     "**m!dumpjson** - Sends moderators.json",
+                                     "**m!dumpjson** - Sends moderators.json\n"
+                                     "**m!jsonoutline** - Sends an outline of moderators.json\n",
                          color=mcol,
                          footer=["Bot Made By PxINKY#0001"]
                          ).build()
     await ctx.send(embed=embed)
 
+# =================================================================================================================
+# ============================================ GENERAL INFORMATION ================================================
+# =================================================================================================================
 
 @Bot.command(help='gives world ID')
 async def world(ctx):
@@ -55,6 +64,7 @@ async def world(ctx):
     embed.set_image(url="attachment://Furry_Island_Announcement.png")
     await ctx.send(embed=embed, file=FIR)
 
+
 @Bot.command(help="Sends a link to the github repo")
 async def github(ctx):
     embed = EmbedBuilder(title="Github Repository",
@@ -63,6 +73,7 @@ async def github(ctx):
                          thumbnail="https://cdn-icons-png.flaticon.com/512/25/25231.png"
                          ).build()
     await ctx.send(embed=embed)
+
 
 @Bot.command(help="A little bit about me!")
 async def whoami(ctx):
@@ -74,24 +85,9 @@ async def whoami(ctx):
                          ).build()
     await ctx.send(embed=embed)
 
-
-@Bot.command(help="List all participants of beta")
-async def beta(ctx):
-    f = open('./Settings/beta', 'r')
-    betausers = "\n**Beta Participants:**\n"
-    for i in f:
-        user = await Bot.fetch_user(int(i))
-        betausers += f"💎 {user.name}#{user.discriminator} - {user.id}\n"
-    f.close()
-    embed = EmbedBuilder(title="**Big thanks to everyone who participated in the beta!**",
-                         description=f"{betausers}",
-                         color=mcol,
-                         thumbnail=f"attachment://beta.png",
-                         footer="Bot Made By PxINKY#0001"
-                         ).build()
-    betapng = discord.File(r"./Resources/beta.png", filename="beta.png")
-    await ctx.send(embed=embed, file=betapng)
-
+# =================================================================================================================
+# =============================================== MODERATOR LIST ==================================================
+# =================================================================================================================
 
 @Bot.command(help="A list of all moderators and there VRChat links")
 async def mods(ctx):
@@ -124,6 +120,9 @@ async def mods(ctx):
         await ctx.send(embed=embed2)
     m.close()
 
+# =================================================================================================================
+# =================================================== SEARCH ======================================================
+# =================================================================================================================
 
 @Bot.command(help="search for mods")
 async def search(ctx, arg):
@@ -162,6 +161,9 @@ async def search(ctx, arg):
     await ctx.send("No user found or invalid/missing parameter")
     M.close()
 
+# =================================================================================================================
+# =============================================== VERIFICATION ====================================================
+# =================================================================================================================
 
 @Bot.command(help="Verify yourself to access the rest of the server!")
 async def verify(ctx):
@@ -278,6 +280,10 @@ async def verify(ctx):
     # delete the original message
     await ctx.message.delete()
 
+# =================================================================================================================
+# =================================================== UPDATE ======================================================
+# =================================================================================================================
+
 @Bot.command(help="Updates the json list with current usernames")
 async def update(ctx):
     message = await ctx.send("Updating...")
@@ -299,6 +305,9 @@ async def update(ctx):
     f.close()
     await message.edit(content="Done!")
 
+# =================================================================================================================
+# ==================================================== JSON =======================================================
+# =================================================================================================================
 
 @Bot.command(help="Sends details on json file")
 async def jsonoutline(ctx):
@@ -321,6 +330,33 @@ async def jsonoutline(ctx):
 async def dumpjson(ctx):
     x = "./Settings/moderators.json"
     await ctx.send(file=discord.File(x))
+
+# =================================================================================================================
+# ==================================================== MISC =======================================================
+# =================================================================================================================
+
+@Bot.command(help="Counts channel messages")
+async def count(ctx):
+    channel = ctx.channel
+    await ctx.send(f"{channel.name} has {len(await channel.history(limit=None).flatten())} messages.")
+
+
+@Bot.command(help="List all participants of beta")
+async def beta(ctx):
+    f = open('./Settings/beta', 'r')
+    betausers = "\n**Beta Participants:**\n"
+    for i in f:
+        user = await Bot.fetch_user(int(i))
+        betausers += f"💎 {user.name}#{user.discriminator} - {user.id}\n"
+    f.close()
+    embed = EmbedBuilder(title="**Big thanks to everyone who participated in the beta!**",
+                         description=f"{betausers}",
+                         color=mcol,
+                         thumbnail=f"attachment://beta.png",
+                         footer="Bot Made By PxINKY#0001"
+                         ).build()
+    betapng = discord.File(r"./Resources/beta.png", filename="beta.png")
+    await ctx.send(embed=embed, file=betapng)
 
 
 Bot.run(TOKEN)
