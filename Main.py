@@ -34,8 +34,9 @@ async def help(ctx):
                                      "\n**INFORMATION COMMANDS**\n"
                                      "**m!mods** - Shows all mods\n"
                                      "**m!world** - Shows world ID and some other information\n"
-                                     "**m!search [Arg 1] [Arg 2]** - Searches for a mod\n**>** Arg 1 = ['DID' / 'DTag' / 'VRChatLink']\n**>** Arg 2 = [Discord ID / Discord Tag / VRChat Profile Link]\n"
-                                     "**m!github** - Sends github link\n",
+                                     "**m!search [Arg 1] [Arg 2]** - Searches for a mod\n**>** Arg 1 = ['DID' / 'DTag' / 'VRCLink']\n**>** Arg 2 = [Discord ID / Discord Tag / VRChat Profile Link]\n"
+                                     "**m!github** - Sends github link\n"
+                                     "**m!dumpjson** - Sends moderators.json",
                          color=mcol,
                          footer=["Bot Made By PxINKY#0001"]
                          ).build()
@@ -124,36 +125,40 @@ async def mods(ctx):
 
 
 @Bot.command(help="search for mods")
-async def search(ctx, param, arg):
+async def search(ctx, arg):
     identifier = ""
-    if param == "DTag":
-        identifier = "DiscordTag"
-    elif param == "DID":
-        identifier = "DiscordID"
-    elif param == "VRCLink":
+
+    # arg scanner:
+
+    # VRChat link / profile id
+    if arg.startswith("https://"):
         identifier = "VRChatLink"
+    elif arg.startswith("usr_"):
+        identifier = "VRChatID"
+    elif arg in "#":
+        identifier = "DiscordTag"
+    elif arg.isdecimal():
+        identifier = "DiscordID"
     else:
         await ctx.send("Invalid Parameter")
         return
+
     M = open('./Settings/moderators.json', 'r')
     Mods = json.load(M)
     for i in Mods["Moderators"]:
         for x in i["members"]:
             if x[identifier] == arg:
-                embed = EmbedBuilder(title=f"Info for {x['DiscordTag']}",
-                                     description=f"[VRChat link]({x['VRChatLink']})\nDiscord Tag: {x['DiscordTag']}\nDiscord ID: {x['DiscordID']}",
+                them = await Bot.fetch_user(x['DiscordID'])
+                embed = EmbedBuilder(title=f"Info for {them.name}#{them.discriminator}",
+                                     description=f"[VRChat link]({x['VRChatLink']})\nDiscord Tag: {them.name}#{them.discriminator}\nDiscord ID: {x['DiscordID']}",
                                      color=mcol,
+                                     thumbnail=them.avatar_url,
                                      footer=["WIP"]
                                      ).build()
-                try:
-                    print(Bot.get_user(int(x['DiscordID'])))
-                    embed.set_thumbnail(url=Bot.get_user(int(x['DiscordID'])).avatar_url)
-                except:
-                    pass
                 await ctx.send(embed=embed)
                 M.close()
                 return
-    await ctx.send("No user found")
+    await ctx.send("No user found or invalid/missing parameter")
     M.close()
 
 
@@ -239,6 +244,9 @@ async def verify(ctx):
     user = "NULL"
     icon = "NULL"
     joined = "NULL"
+    # https://stackoverflow.com/questions/67469575/discord-py-how-to-get-info-when-member-registered-on-discord-and-joined-server
+    date_format = "%a, %b %d, %Y @ %I:%M %p"
+
     try:
         usr = await Bot.fetch_user(ctx.author.id)
     except:
@@ -248,11 +256,11 @@ async def verify(ctx):
     except:
         pass
     try:
-        joined = usr.joined_at
+        joined = ctx.author.joined_at.strftime(date_format)
     except:
         pass
     try:
-        user = usr.created_at
+        user = usr.created_at.strftime(date_format)
     except:
         pass
 
@@ -293,16 +301,25 @@ async def update(ctx):
 
 @Bot.command(help="Sends details on json file")
 async def jsonoutline(ctx):
+    x = "./Settings/moderators.json"
+    f = open(x, "r")
+    data = json.load(f)
+    f.close()
+    s = "[Moderators]\n ↑ [GroupName]\n ↑ [members]\n    ↑ [DiscordTag]\n    ↑ [DiscordID]\n    ↑ [VRChatLink]\n    ↑ [VRChatID]"
+
     embed = EmbedBuilder(title="JSON File",
-        description=f'',
+        description=f'{s}',
         color=mcol,
-        thumbnail=Bot.user.avatar_url
+        thumbnail="attachment://json.png"
         ).build()
-    await ctx.send(embed=embed)
+    curl = discord.File(r"./Resources/json.png", filename="json.png")
+    await ctx.send(embed=embed, file=curl)
+
 
 @Bot.command(help="Dumps .json file")
 async def dumpjson(ctx):
     x = "./Settings/moderators.json"
     await ctx.send(file=discord.File(x))
+
 
 Bot.run(TOKEN)
