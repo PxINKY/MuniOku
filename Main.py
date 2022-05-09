@@ -77,10 +77,11 @@ async def whoami(ctx):
 
 @Bot.command(help="List all participants of beta")
 async def beta(ctx):
-    f = open('beta', 'r')
+    f = open('./Settings/beta', 'r')
     betausers = "\n**Beta Participants:**\n"
     for i in f:
-        betausers += f"💎 {i}"
+        user = await Bot.fetch_user(int(i))
+        betausers += f"💎 {user.name}#{user.discriminator} - {user.id}\n"
     f.close()
     embed = EmbedBuilder(title="**Big thanks to everyone who participated in the beta!**",
                          description=f"{betausers}",
